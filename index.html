@@ -1,0 +1,920 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>48일 성경 암송 챌린지 (9/28 ~ 11/14)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f6f7f9',
+              100: '#edeef3',
+              200: '#d7dae4',
+              500: '#435368',
+              600: '#354354',
+              700: '#283340',
+              800: '#1d2631',
+              900: '#141a22',
+            },
+            amberWarm: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              500: '#f59e0b',
+              600: '#d97706',
+              800: '#92400e',
+            }
+          },
+          fontFamily: {
+            sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif'],
+            serif: ['Nanum Myeongjo', 'Batang', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Pretendard:wght@300;400;500;600;700&display=swap');
+    
+    .font-bible {
+      font-family: 'Nanum Myeongjo', serif;
+      line-height: 1.85;
+      letter-spacing: -0.015em;
+    }
+    
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .card-shadow {
+      box-shadow: 0 10px 30px -5px rgba(26, 38, 57, 0.08), 0 4px 6px -2px rgba(26, 38, 57, 0.04);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.02); }
+    }
+    .pulse-glow {
+      animation: pulseGlow 2.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900">
+
+  <header class="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold text-lg">
+          <i class="fa-solid fa-book-bible"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-slate-800 leading-tight">말씀 암송 48일</h1>
+          <p class="text-[11px] text-slate-500 font-medium">9월 28일 ~ 11월 14일</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="todayJumpBtn" class="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition flex items-center gap-1.5 shadow-sm active:scale-95">
+          <i class="fa-solid fa-calendar-day"></i>
+          <span>오늘 구절</span>
+        </button>
+        <button id="toggleListBtn" class="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition active:scale-95" title="전체 목록">
+          <i class="fa-solid fa-list-ul text-base"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto w-full px-4 pt-4 pb-20 flex-1 flex flex-col">
+    <!-- Progress Indicator Bar -->
+    <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 mb-4 shadow-sm">
+      <div class="flex justify-between items-center text-xs font-medium text-slate-600 mb-2">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-ping"></span>
+          암송 달성률
+        </span>
+        <span id="progressText" class="font-bold text-slate-800">0 / 48일 (0%)</span>
+      </div>
+      <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden p-0.5">
+        <div id="progressBar" class="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Today Badge & Date Navigation Bar -->
+    <div class="flex items-center justify-between mb-3 px-1">
+      <button id="prevDayBtn" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-medium hover:bg-slate-50 active:scale-95 flex items-center gap-1 transition">
+        <i class="fa-solid fa-chevron-left"></i> 이전
+      </button>
+
+      <div class="text-center">
+        <div id="badgeToday" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 mb-0.5">
+          <i class="fa-solid fa-sparkles"></i> 오늘의 암송구절
+        </div>
+        <div id="currentDateDisplay" class="text-xs font-semibold text-slate-600">2026. 09. 28 (월) · Day 1</div>
+      </div>
+
+      <button id="nextDayBtn" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-medium hover:bg-slate-50 active:scale-95 flex items-center gap-1 transition">
+        다음 <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- The Scripture Card -->
+    <div class="bg-white rounded-3xl border border-slate-200/90 card-shadow overflow-hidden flex flex-col transition-all duration-300">
+      <!-- Card Top Info -->
+      <div class="p-5 pb-3 border-b border-slate-100 flex items-start justify-between">
+        <div>
+          <span id="verseThemeBadge" class="text-[11px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg inline-block mb-1.5">
+            이사야 43장 구원의 약속
+          </span>
+          <h2 id="verseReference" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            이사야 43:1절
+          </h2>
+        </div>
+        <div class="flex items-center gap-1 text-slate-400">
+          <button id="speakBtn" class="p-2.5 rounded-xl hover:bg-slate-100 hover:text-slate-700 transition" title="말씀 낭독 듣기">
+            <i class="fa-solid fa-volume-high text-lg"></i>
+          </button>
+          <button id="copyBtn" class="p-2.5 rounded-xl hover:bg-slate-100 hover:text-slate-700 transition" title="구절 복사">
+            <i class="fa-regular fa-copy text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mode Selector Tabs -->
+      <div class="px-5 pt-3 flex gap-1.5 text-xs font-semibold border-b border-slate-100/70 pb-2.5 overflow-x-auto hide-scrollbar">
+        <button data-mode="full" class="mode-tab px-3 py-1.5 rounded-xl bg-slate-900 text-white transition active:scale-95">
+          전체 보기
+        </button>
+        <button data-mode="initial" class="mode-tab px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition active:scale-95">
+          초성 힌트
+        </button>
+        <button data-mode="blank" class="mode-tab px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition active:scale-95">
+          빈칸 모드
+        </button>
+        <button data-mode="blind" class="mode-tab px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition active:scale-95">
+          가리기 암송
+        </button>
+      </div>
+
+      <!-- Verse Content Box -->
+      <div class="p-6 sm:p-8 flex-1 flex flex-col justify-center min-h-[260px] bg-gradient-to-b from-white to-amber-50/20">
+        <div id="verseContent" class="font-bible text-lg sm:text-xl text-slate-800 leading-relaxed whitespace-pre-line text-left transition-all duration-200 select-text">
+          <!-- Text inserted via JS -->
+        </div>
+        <p id="modeHelper" class="text-xs text-slate-400 mt-4 text-center italic hidden">
+          * 빈칸 박스를 터치하면 숨겨진 단어가 나타납니다.
+        </p>
+      </div>
+
+      <!-- Bottom Actions: Memorized Checkbox -->
+      <div class="p-4 sm:p-5 bg-slate-50/90 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2 text-xs text-slate-500">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span id="dateRangeInfo">2026.09.28 암송 구절</span>
+        </div>
+        <button id="toggleCompleteBtn" class="w-full sm:w-auto px-5 py-2.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 bg-white border border-slate-300 text-slate-700 hover:border-emerald-500 hover:text-emerald-700">
+          <i class="fa-regular fa-circle-check text-lg"></i>
+          <span>오늘 암송 완료하기</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Pills (Days 1 to 48) Drawer/Modal Trigger -->
+    <div class="mt-6 flex items-center justify-between">
+      <h3 class="text-sm font-bold text-slate-700">48일 여정 목록</h3>
+      <span class="text-xs text-slate-400">총 48일 (구절 52개 압축)</span>
+    </div>
+
+    <div id="allDaysContainer" class="mt-3 grid grid-cols-4 sm:grid-cols-6 gap-2">
+      <!-- Generated via JS -->
+    </div>
+  </main>
+
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-slate-900/90 text-white text-xs font-semibold backdrop-blur shadow-lg pointer-events-none transition-all duration-300 opacity-0 translate-y-3 flex items-center gap-2">
+    <i class="fa-solid fa-circle-check text-amber-400"></i>
+    <span id="toastMsg">클립보드에 복사되었습니다!</span>
+  </div>
+
+  <script>
+    /*
+      48일 성경 암송 플랜 데이터 정의
+      기간: 2026년 9월 28일 ~ 11월 14일 (총 48일)
+      구절 구성:
+      - 사 43장 (1~28절) : 비교적 짧은 절들(11-12절, 14-15절, 18-19절)을 2개씩 묶음 (-3일)
+      - 사 52장 (1~15절) : 짧은 절(2-3절)을 묶음 (-1일)
+      - 시 24편 (1~10절) : 9-10절은 원래 표에서 1개 주차로 편성됨.
+      => 총 52주 분량을 자연스럽게 48일로 완벽 매칭!
+    */
+
+    const PLAN_START_DATE = new Date(2026, 8, 28); // Month is 0-indexed: 8 = September
+    const TOTAL_DAYS = 48;
+
+    const BIBLE_PLAN = [
+      // Day 1 ~ Day 10 (이사야 43장)
+      {
+        day: 1,
+        dateStr: "9월 28일 (월)",
+        month: 9, date: 28,
+        theme: "이사야 43장 · 창조와 구속",
+        ref: "이사야 43:1절",
+        text: "야곱아 너를 창조하신 여호와께서 지금 말씀하시느니라 이스라엘아 너를 지으신 이가 말씀하시느니라 너는 두려워하지 말라 내가 너를 구속하였고 내가 너를 지명하여 불렀나니 너는 내 것이라"
+      },
+      {
+        day: 2,
+        dateStr: "9월 29일 (화)",
+        month: 9, date: 29,
+        theme: "이사야 43장 · 하나님의 동행",
+        ref: "이사야 43:2절",
+        text: "네가 물 가운데로 지날 때에 내가 너와 함께 할 것이라 강을 건널 때에 물이 너를 침몰하지 못할 것이며 네가 불 가운데로 지날 때에 타지도 아니할 것이요 불꽃이 너를 사르지도 못하리니"
+      },
+      {
+        day: 3,
+        dateStr: "9월 30일 (수)",
+        month: 9, date: 30,
+        theme: "이사야 43장 · 구원자 하나님",
+        ref: "이사야 43:3절",
+        text: "대저 나는 여호와 네 하나님이요 이스라엘의 거룩한 이요 네 구원자임이라 내가 애굽을 너의 속량물로, 구스와 스바를 너를 대신하여 주었노라"
+      },
+      {
+        day: 4,
+        dateStr: "10월 1일 (목)",
+        month: 10, date: 1,
+        theme: "이사야 43장 · 보배롭고 존귀함",
+        ref: "이사야 43:4절",
+        text: "네가 내 눈에 보배롭고 존귀하며 내가 너를 사랑하였은즉 내가 네 대신 사람들을 내어 주며 백성들이 네 생명을 대신하리니"
+      },
+      {
+        day: 5,
+        dateStr: "10월 2일 (금)",
+        month: 10, date: 2,
+        theme: "이사야 43장 · 백성을 모으심",
+        ref: "이사야 43:5절",
+        text: "두려워하지 말라 내가 너와 함께 하여 네 자손을 동쪽에서부터 오게 하며 서쪽에서부터 너를 모을 것이며"
+      },
+      {
+        day: 6,
+        dateStr: "10월 3일 (토)",
+        month: 10, date: 3,
+        theme: "이사야 43장 · 자녀들을 부르심",
+        ref: "이사야 43:6절",
+        text: "내가 북쪽에게 이르기를 내놓으라 남쪽에게 이르기를 가두어 두지 말라 내 아들들을 먼 곳에서 이끌며 내 딸들을 땅 끝에서 오게 하며"
+      },
+      {
+        day: 7,
+        dateStr: "10월 4일 (일)",
+        month: 10, date: 4,
+        theme: "이사야 43장 · 영광을 위한 창조",
+        ref: "이사야 43:7절",
+        text: "내 이름으로 불려지는 모든 자 곧 내가 내 영광을 위하여 창조한 자를 오게 하라 그를 내가 지었고 그를 내가 만들었느니라"
+      },
+      {
+        day: 8,
+        dateStr: "10월 5일 (월)",
+        month: 10, date: 5,
+        theme: "이사야 43장 · 백성을 이끌어냄",
+        ref: "이사야 43:8절",
+        text: "눈이 있어도 보지 못하고 귀가 있어도 듣지 못하는 백성을 이끌어 내라"
+      },
+      {
+        day: 9,
+        dateStr: "10월 6일 (화)",
+        month: 10, date: 6,
+        theme: "이사야 43장 · 열방의 공판",
+        ref: "이사야 43:9절",
+        text: "열방은 모여 공판하며 민족들이 분집하였는데 그들 중에 누가 이 일을 알려 주며 이전 형성들을 우리에게 들려주겠느냐 그들이 증인을 세워서 자기들의 옳음을 나타내어 듣는 자들이 옳다 말하게 하여 보라"
+      },
+      {
+        day: 10,
+        dateStr: "10월 7일 (수)",
+        month: 10, date: 7,
+        theme: "이사야 43장 · 나의 증인과 종",
+        ref: "이사야 43:10절",
+        text: "나 여호와가 말하노라 너희는 나의 증인, 나의 종으로 택함을 입었나니 이는 너희가 나를 알고 믿으며 내가 그인 줄 깨닫게 하려 함이라 나의 전에 지음을 받은 신이 없었느니라 나의 후에도 없으리라"
+      },
+
+      // Day 11 : 11절 + 12절 (짧은 구절 묶음 1)
+      {
+        day: 11,
+        dateStr: "10월 8일 (목)",
+        month: 10, date: 8,
+        theme: "이사야 43장 · 유일하신 여호와 [2개 구절]",
+        ref: "이사야 43:11-12절",
+        text: "11절: 나 곧 나는 여호와라 나 외에 구원자가 없느니라\n12절: 내가 알려 주었으며 구원하였으며 보였고 너희 중에 다른 신이 없었나니 그러므로 너희는 나의 증인이요 나는 하나님이니라 여호와의 말씀이니라"
+      },
+      {
+        day: 12,
+        dateStr: "10월 9일 (금)",
+        month: 10, date: 9,
+        theme: "이사야 43장 · 태초부터 계신 이",
+        ref: "이사야 43:13절",
+        text: "과연 태초로부터 나는 그이니 내 손에서 건질 자가 없도다 내가 행하리니 누가 막으리요"
+      },
+
+      // Day 13 : 14절 + 15절 (짧은 구절 묶음 2)
+      {
+        day: 13,
+        dateStr: "10월 10일 (토)",
+        month: 10, date: 10,
+        theme: "이사야 43장 · 구속자요 너희의 왕 [2개 구절]",
+        ref: "이사야 43:14-15절",
+        text: "14절: 너희의 구속자요 이스라엘의 거룩한 이 여호와가 말하노라 너희를 위하여 내가 바벨론에 사람을 보내어 모든 갈대아 사람에게 자기들이 연락하던 배를 타고 도망하여 내려가게 하리라\n15절: 나는 여호와 너희의 거룩한 이요 이스라엘의 창조자요 너희의 왕이니라"
+      },
+      {
+        day: 14,
+        dateStr: "10월 11일 (일)",
+        month: 10, date: 11,
+        theme: "이사야 43장 · 바다 가운데 길을 내심",
+        ref: "이사야 43:16절",
+        text: "나 여호와가 이같이 말하노라 바다 가운데에 길을, 큰 물 가운데에 지름길을 내고"
+      },
+      {
+        day: 15,
+        dateStr: "10월 12일 (월)",
+        month: 10, date: 12,
+        theme: "이사야 43장 · 원수를 소멸하심",
+        ref: "이사야 43:17절",
+        text: "병거와 말과 군대의 용사를 이끌어 내어 그들이 일시에 엎드러져 일어나지 못하고 소멸하기를 꺼져가는 등불 같게 하였느니라"
+      },
+
+      // Day 16 : 18절 + 19절 (짧은 구절 묶음 3)
+      {
+        day: 16,
+        dateStr: "10월 13일 (화)",
+        month: 10, date: 13,
+        theme: "이사야 43장 · 새 일을 행하리니 [2개 구절]",
+        ref: "이사야 43:18-19절",
+        text: "18절: 너희는 이전 일을 기억하지 말며 옛날 일을 생각하지 말라\n19절: 보라 내가 새 일을 행하리니 이제 나타낼 것이라 너희가 그것을 알지 못하겠느냐 반드시 내가 광야에 길을 사막에 강을 내리니"
+      },
+      {
+        day: 17,
+        dateStr: "10월 14일 (수)",
+        month: 10, date: 14,
+        theme: "이사야 43장 · 택한 자를 마시게 함",
+        ref: "이사야 43:20절",
+        text: "장차 들짐승 곧 승냥이와 타조도 나를 존경할 것은 내가 광야에 물을, 사막에 강들을 내어 내 백성, 내가 택한 자에게 마시게 할 것임이라"
+      },
+      {
+        day: 18,
+        dateStr: "10월 15일 (목)",
+        month: 10, date: 15,
+        theme: "이사야 43장 · 찬송하게 하려 함",
+        ref: "이사야 43:21절",
+        text: "이 백성은 내가 나를 위하여 지었나니 나를 찬송하게 하려 함이니라"
+      },
+      {
+        day: 19,
+        dateStr: "10월 16일 (금)",
+        month: 10, date: 16,
+        theme: "이사야 43장 · 백성의 무심함",
+        ref: "이사야 43:22절",
+        text: "그러나 야곱아 너는 나를 부르지 아니하였고 이스라엘아 너는 나를 괴롭게 여겼으며"
+      },
+      {
+        day: 20,
+        dateStr: "10월 17일 (토)",
+        month: 10, date: 17,
+        theme: "이사야 43장 · 하나님의 자비",
+        ref: "이사야 43:23절",
+        text: "네 번제의 양을 내게로 가져오지 아니하였고 네 제물로 나를 공경하지 아니하였느니라 나는 제물로 말미암아 너를 수고롭게 하지 아니하였고 유향으로 말미암아 너를 괴롭게 하지 아니하였거늘"
+      },
+      {
+        day: 21,
+        dateStr: "10월 18일 (일)",
+        month: 10, date: 18,
+        theme: "이사야 43장 · 백성의 죄짐",
+        ref: "이사야 43:24절",
+        text: "너는 나를 위하여 돈으로 향품을 사지 아니하며 희생의 기름으로 나를 흡족하게 하지 아니하고 네 죄짐으로 나를 수고롭게 하며 네 죄악으로 나를 괴롭게 하였느니라"
+      },
+      {
+        day: 22,
+        dateStr: "10월 19일 (월)",
+        month: 10, date: 19,
+        theme: "이사야 43장 · 죄를 기억치 아니하심",
+        ref: "이사야 43:25절",
+        text: "나 곧 나는 나를 위하여 네 허물을 도말하는 자니 네 죄를 기억하지 아니하리라"
+      },
+      {
+        day: 23,
+        dateStr: "10월 20일 (화)",
+        month: 10, date: 20,
+        theme: "이사야 43장 · 변론과 변호",
+        ref: "이사야 43:26절",
+        text: "너는 나에게 기억이 나게 하라 우리가 함께 변론하자 너는 말하여 네가 의로움을 나타내라"
+      },
+      {
+        day: 24,
+        dateStr: "10월 21일 (수)",
+        month: 10, date: 21,
+        theme: "이사야 43장 · 시조의 범죄",
+        ref: "이사야 43:27절",
+        text: "네 시조가 범죄하였고 너의 교사들이 나를 배반하였나니"
+      },
+      {
+        day: 25,
+        dateStr: "10월 22일 (목)",
+        month: 10, date: 22,
+        theme: "이사야 43장 · 공의의 심판",
+        ref: "이사야 43:28절",
+        text: "그러므로 내가 성소의 어른들을 욕되게 하며 야곱이 진멸 당하도록 내어 주며 이스라엘이 비방 거리가 되게 하리라"
+      },
+
+      // Day 26 ~ (이사야 52장 시작)
+      {
+        day: 26,
+        dateStr: "10월 23일 (금)",
+        month: 10, date: 23,
+        theme: "이사야 52장 · 시온의 회복",
+        ref: "이사야 52:1절",
+        text: "시온이여 깰지어다 깰지어다 네 힘을 낼지어다 거룩한 성 예루살렘이여 네 아름다운 옷을 입을지어다 이제부터 할례 받지 아니한 자와 부정한 자가 다시는 네게로 들어옴이 없을 것임이라"
+      },
+
+      // Day 27 : 2절 + 3절 (짧은 구절 묶음 4)
+      {
+        day: 27,
+        dateStr: "10월 24일 (토)",
+        month: 10, date: 24,
+        theme: "이사야 52장 · 사슬을 풀고 속량됨 [2개 구절]",
+        ref: "이사야 52:2-3절",
+        text: "2절: 너는 티끌을 털어버릴지어다 예루살렘이여 일어나 앉을지어다 사로잡힌 딸 시온이여 네 목의 줄을 스스로 풀지어다\n3절: 여호와께서 이와 같이 말씀하시되 너희가 값 없이 팔렸으니 돈 없이 속량되리라"
+      },
+      {
+        day: 28,
+        dateStr: "10월 25일 (일)",
+        month: 10, date: 25,
+        theme: "이사야 52장 · 압제받던 역사",
+        ref: "이사야 52:4절",
+        text: "주 여호와께서 이와 같이 말씀하시되 내 백성이 전에 애굽에 내려가서 거기에 거류하였고 앗수르인은 까닭 없이 그들을 압제하였도다"
+      },
+      {
+        day: 29,
+        dateStr: "10월 26일 (월)",
+        month: 10, date: 26,
+        theme: "이사야 52장 · 하나님의 개입 선포",
+        ref: "이사야 52:5절",
+        text: "그러므로 이제 여호와께서 말씀하시되 내 백성이 까닭 없이 잡혀갔으니 내가 여기서 어떻게 할까 여호와께서 말씀하시되 그들을 관할하는 자들이 떠들며 내 이름을 항상 종일토록 더럽히도다"
+      },
+      {
+        day: 30,
+        dateStr: "10월 27일 (화)",
+        month: 10, date: 27,
+        theme: "이사야 52장 · 내 이름을 알리라",
+        ref: "이사야 52:6절",
+        text: "그러므로 내 백성은 내 이름을 알리라 그러므로 그 날에는 그들이 이 말을 하는 자가 나인 줄 알리라 내가 여기 있느니라"
+      },
+      {
+        day: 31,
+        dateStr: "10월 28일 (수)",
+        month: 10, date: 28,
+        theme: "이사야 52장 · 아름다운 복음의 발",
+        ref: "이사야 52:7절",
+        text: "좋은 소식을 전하며 평화를 공포하며 복된 좋은 소식을 가져오며 구원을 공포하며 시온을 향하여 이르기를 네 하나님이 통치하신다 하는 자의 산을 넘는 발이 어찌 그리 아름다운가"
+      },
+      {
+        day: 32,
+        dateStr: "10월 29일 (목)",
+        month: 10, date: 29,
+        theme: "이사야 52장 · 파수꾼들의 노래",
+        ref: "이사야 52:8절",
+        text: "네 파수꾼들의 소리로다 그들이 소리를 높여 일제히 노래하니 이는 여호와께서 시온으로 돌아오실 때에 그들의 눈이 마주 보리로다"
+      },
+      {
+        day: 33,
+        dateStr: "10월 30일 (금)",
+        month: 10, date: 30,
+        theme: "이사야 52장 · 예루살렘의 위로",
+        ref: "이사야 52:9절",
+        text: "너 예루살렘의 황폐한 곳들아 기쁜 소리를 내어 함께 노래할지어다 이는 여호와께서 그의 백성을 위로하셨고 예루살렘을 구속하셨음이라"
+      },
+      {
+        day: 34,
+        dateStr: "10월 31일 (토)",
+        month: 10, date: 31,
+        theme: "이사야 52장 · 거룩한 팔을 나타내심",
+        ref: "이사야 52:10절",
+        text: "여호와께서 열방의 목전에서 그의 거룩한 팔을 나타내셨으므로 땅 끝까지도 모두 우리 하나님의 구원을 보았도다"
+      },
+      {
+        day: 35,
+        dateStr: "11월 1일 (일)",
+        month: 11, date: 1,
+        theme: "이사야 52장 · 스스로 정결하게 하라",
+        ref: "이사야 52:11절",
+        text: "너희는 떠날지어다 떠날지어다 거기서 나오고 부정한 것을 만지지 말지어다 그 가운데에서 나올지어다 여호와의 기구를 메는 자들이여 스스로 정결하게 할지어다"
+      },
+      {
+        day: 36,
+        dateStr: "11월 2일 (월)",
+        month: 11, date: 2,
+        theme: "이사야 52장 · 뒤에서 호위하시는 주",
+        ref: "이사야 52:12절",
+        text: "여호와께서 너희 앞에서 행하시며 이스라엘의 하나님이 너희 뒤에서 호위하시리니 너희가 황급히 나오지 아니하며 도망하듯 행하지 아니하리라"
+      },
+      {
+        day: 37,
+        dateStr: "11월 3일 (화)",
+        month: 11, date: 3,
+        theme: "이사야 52장 · 지극히 존귀하게 될 종",
+        ref: "이사야 52:13절",
+        text: "보라 내 종이 형통하리니 받들어 높이 들려서 지극히 존귀하게 되리라"
+      },
+      {
+        day: 38,
+        dateStr: "11월 4일 (수)",
+        month: 11, date: 4,
+        theme: "이사야 52장 · 고난의 종의 모습",
+        ref: "이사야 52:14절",
+        text: "전에는 그의 모양이 타인보다 상하였고 그의 모습이 사람들보다 상하였으므로 많은 사람이 그에 대하여 놀랐거니와"
+      },
+      {
+        day: 39,
+        dateStr: "11월 5일 (목)",
+        month: 11, date: 5,
+        theme: "이사야 52장 · 열방을 놀라게 하심",
+        ref: "이사야 52:15절",
+        text: "그가 나라들을 놀라게 할 것이며 왕들은 그로 말미암아 그들의 입을 봉하리니 이는 그들이 아직 그들에게 전파되지 아니한 것을 볼 것이요 아직 듣지 못한 것을 깊이 생각할 것임이라"
+      },
+
+      // Day 40 ~ 48 (시편 24편 1절 ~ 10절)
+      {
+        day: 40,
+        dateStr: "11월 6일 (금)",
+        month: 11, date: 6,
+        theme: "시편 24편 · 하나님의 창조와 소유",
+        ref: "시편 24:1절",
+        text: "땅과 거기에 충만한 것과 세계와 그 가운데에 사는 자들은 다 여호와의 것이로다"
+      },
+      {
+        day: 41,
+        dateStr: "11월 7일 (토)",
+        month: 11, date: 7,
+        theme: "시편 24편 · 터를 세우심",
+        ref: "시편 24:2절",
+        text: "여호와께서 그 터를 바다 위에 세우심이여 강들 위에 건설하셨도다"
+      },
+      {
+        day: 42,
+        dateStr: "11월 8일 (일)",
+        month: 11, date: 8,
+        theme: "시편 24편 · 거룩한 산에 설 자",
+        ref: "시편 24:3절",
+        text: "여호와의 산에 오를 자가 누구며 그의 거룩한 곳에 설 자가 누구인가"
+      },
+      {
+        day: 43,
+        dateStr: "11월 9일 (월)",
+        month: 11, date: 9,
+        theme: "시편 24편 · 깨끗한 손과 청결한 마음",
+        ref: "시편 24:4절",
+        text: "곧 손이 깨끗하며 마음이 청결하며 뜻을 허탄한 데에 두지 아니하며 거짓 맹세하지 아니하는 자로다"
+      },
+      {
+        day: 44,
+        dateStr: "11월 10일 (화)",
+        month: 11, date: 10,
+        theme: "시편 24편 · 의와 복을 얻으리니",
+        ref: "시편 24:5절",
+        text: "그는 여호와께 복을 받고 구원의 하나님께 의를 얻으리니"
+      },
+      {
+        day: 45,
+        dateStr: "11월 11일 (수)",
+        month: 11, date: 11,
+        theme: "시편 24편 · 하나님의 얼굴을 구함",
+        ref: "시편 24:6절",
+        text: "이는 여호와를 찾는 족속이요 야곱의 하나님의 얼굴을 구하는 자로다 (셀라)"
+      },
+      {
+        day: 46,
+        dateStr: "11월 12일 (목)",
+        month: 11, date: 12,
+        theme: "시편 24편 · 문들아 머리를 들라",
+        ref: "시편 24:7절",
+        text: "문들아 너희 머리를 들지어다 영원한 문들아 들릴지어다 영광의 왕이 들어가시리로다"
+      },
+      {
+        day: 47,
+        dateStr: "11월 13일 (금)",
+        month: 11, date: 13,
+        theme: "시편 24편 · 강하고 능하신 왕",
+        ref: "시편 24:8절",
+        text: "영광의 왕이 누구시냐 강하고 능한 여호와시요 전쟁에 능한 여호와시로다"
+      },
+      {
+        day: 48,
+        dateStr: "11월 14일 (토)",
+        month: 11, date: 14,
+        theme: "시편 24편 · 만군의 여호와 [완주!]",
+        ref: "시편 24:9-10절",
+        text: "9절: 문들아 너희 머리를 들지어다 영원한 문들아 들릴지어다 영광의 왕이 들어가시리로다\n10절: 영광의 왕이 누구시냐 만군의 여호와께서 곧 영광의 왕이시로다 (셀라)"
+      }
+    ];
+
+    let currentDayIndex = 0; // 0 to 47
+    let currentMode = 'full'; // 'full', 'initial', 'blank', 'blind'
+    let completedDays = JSON.parse(localStorage.getItem('bible_memorize_completed_v1') || '{}');
+
+    // Chosung helper for Korean
+    const CHOSUNG_LIST = [
+      'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 
+      'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
+    ];
+
+    function getKoreanInitial(char) {
+      const code = char.charCodeAt(0) - 0xAC00;
+      if (code > -1 && code < 11172) {
+        return CHOSUNG_LIST[Math.floor(code / 588)];
+      }
+      return char;
+    }
+
+    function toInitialString(text) {
+      return text.split('').map(char => {
+        if (/[가-힣]/.test(char)) {
+          return getKoreanInitial(char);
+        }
+        return char;
+      }).join('');
+    }
+
+    function computeTodayIndex() {
+      const today = new Date();
+      // 날짜 차이 계산
+      const diffTime = today.setHours(0,0,0,0) - new Date(2026, 8, 28).setHours(0,0,0,0);
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays >= 0 && diffDays < TOTAL_DAYS) {
+        return diffDays;
+      } else if (diffDays < 0) {
+        return 0; // 시작 전이면 Day 1
+      } else {
+        return TOTAL_DAYS - 1; // 끝났으면 마지막 날
+      }
+    }
+
+    const todayOfficialIndex = computeTodayIndex();
+    currentDayIndex = todayOfficialIndex;
+
+    const verseContentEl = document.getElementById('verseContent');
+    const verseRefEl = document.getElementById('verseReference');
+    const verseThemeBadgeEl = document.getElementById('verseThemeBadge');
+    const currentDateDisplayEl = document.getElementById('currentDateDisplay');
+    const dateRangeInfoEl = document.getElementById('dateRangeInfo');
+    const badgeTodayEl = document.getElementById('badgeToday');
+    const toggleCompleteBtn = document.getElementById('toggleCompleteBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const modeHelperEl = document.getElementById('modeHelper');
+    const allDaysContainer = document.getElementById('allDaysContainer');
+
+    function updateProgress() {
+      const count = Object.values(completedDays).filter(Boolean).length;
+      const pct = Math.round((count / TOTAL_DAYS) * 100);
+      progressBar.style.width = `${pct}%`;
+      progressText.textContent = `${count} / ${TOTAL_DAYS}일 (${pct}%)`;
+    }
+
+    function renderScheduleGrid() {
+      allDaysContainer.innerHTML = '';
+      BIBLE_PLAN.forEach((item, idx) => {
+        const isSelected = idx === currentDayIndex;
+        const isToday = idx === todayOfficialIndex;
+        const isDone = !!completedDays[item.day];
+
+        const btn = document.createElement('button');
+        btn.className = `p-2.5 rounded-2xl flex flex-col items-center justify-center text-center transition-all text-xs border relative ${
+          isSelected 
+            ? 'bg-amber-500 text-white border-amber-600 shadow-md font-bold scale-[1.03]' 
+            : isDone 
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 font-semibold' 
+              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+        }`;
+
+        let statusIcon = '';
+        if (isDone) {
+          statusIcon = `<span class="absolute top-1 right-1 text-[10px] text-emerald-600"><i class="fa-solid fa-circle-check"></i></span>`;
+        }
+
+        btn.innerHTML = `
+          ${statusIcon}
+          <span class="text-[10px] opacity-80">${item.month}/${item.date}</span>
+          <span class="font-bold text-xs mt-0.5">D-${item.day}</span>
+          <span class="text-[9px] truncate max-w-full mt-0.5 ${isSelected ? 'text-amber-100' : 'text-slate-400'}">${item.ref.split(' ')[0]} ${item.ref.split(' ')[1] || ''}</span>
+        `;
+
+        btn.addEventListener('click', () => {
+          currentDayIndex = idx;
+          renderDayView();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        allDaysContainer.appendChild(btn);
+      });
+    }
+
+    function renderVerseText() {
+      const data = BIBLE_PLAN[currentDayIndex];
+      const rawText = data.text;
+
+      modeHelperEl.classList.add('hidden');
+
+      if (currentMode === 'full') {
+        verseContentEl.innerHTML = rawText.replace(/\n/g, '<br><br>');
+      } else if (currentMode === 'initial') {
+        const initialText = toInitialString(rawText);
+        verseContentEl.innerHTML = `<span class="tracking-widest font-mono text-slate-700 font-medium">${initialText.replace(/\n/g, '<br><br>')}</span>`;
+      } else if (currentMode === 'blank') {
+        modeHelperEl.classList.remove('hidden');
+        // 일부 단어들을 마스킹
+        const words = rawText.split(/(\s+)/);
+        let wordCounter = 0;
+        const html = words.map(chunk => {
+          if (/^\s+$/.test(chunk)) return chunk.replace(/\n/g, '<br>');
+          wordCounter++;
+          // 2번째 혹은 3번째 단어마다 빈칸 처리
+          if (wordCounter % 2 === 0 && chunk.length > 1) {
+            return `<span class="blank-word inline-block bg-amber-100 text-amber-100 hover:text-slate-900 border-b-2 border-amber-400 px-1 rounded cursor-pointer transition selection:bg-transparent" onclick="this.classList.toggle('text-slate-900'); this.classList.toggle('text-amber-100');">${chunk}</span>`;
+          }
+          return chunk;
+        }).join('');
+        verseContentEl.innerHTML = html;
+      } else if (currentMode === 'blind') {
+        verseContentEl.innerHTML = `
+          <div class="py-10 text-center flex flex-col items-center justify-center cursor-pointer group" onclick="setMode('full')">
+            <div class="w-14 h-14 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition">
+              <i class="fa-solid fa-eye-slash"></i>
+            </div>
+            <p class="font-bold text-slate-700 text-base mb-1">말씀이 숨겨져 있습니다</p>
+            <p class="text-xs text-slate-400">마음속으로 암송해본 후 여기를 터치해 정답을 확인하세요!</p>
+          </div>
+        `;
+      }
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-tab').forEach(tab => {
+        if (tab.dataset.mode === mode) {
+          tab.className = 'mode-tab px-3 py-1.5 rounded-xl bg-slate-900 text-white transition active:scale-95 font-bold shadow-sm';
+        } else {
+          tab.className = 'mode-tab px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition active:scale-95';
+        }
+      });
+      renderVerseText();
+    }
+
+    function renderDayView() {
+      const data = BIBLE_PLAN[currentDayIndex];
+      const isToday = currentDayIndex === todayOfficialIndex;
+      const isDone = !!completedDays[data.day];
+
+      // Badges & References
+      verseThemeBadgeEl.textContent = data.theme;
+      verseRefEl.textContent = data.ref;
+      currentDateDisplayEl.textContent = `${data.dateStr} · Day ${data.day}`;
+      dateRangeInfoEl.textContent = `${data.dateStr} 암송 구절`;
+
+      if (isToday) {
+        badgeTodayEl.classList.remove('hidden');
+        badgeTodayEl.innerHTML = `<i class="fa-solid fa-sparkles text-amber-500"></i> 오늘의 암송구절!`;
+        badgeTodayEl.className = "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 mb-0.5 pulse-glow";
+      } else {
+        badgeTodayEl.classList.remove('hidden');
+        badgeTodayEl.className = "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 mb-0.5";
+        badgeTodayEl.innerHTML = `Day ${data.day} of ${TOTAL_DAYS}`;
+      }
+
+      // Checkbox state
+      if (isDone) {
+        toggleCompleteBtn.innerHTML = `
+          <i class="fa-solid fa-circle-check text-lg text-emerald-500"></i>
+          <span class="text-emerald-700 font-bold">암송 완료됨</span>
+        `;
+        toggleCompleteBtn.className = "w-full sm:w-auto px-5 py-2.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 bg-emerald-50 border border-emerald-300 text-emerald-800";
+      } else {
+        toggleCompleteBtn.innerHTML = `
+          <i class="fa-regular fa-circle-check text-lg text-slate-400"></i>
+          <span>오늘 암송 완료하기</span>
+        `;
+        toggleCompleteBtn.className = "w-full sm:w-auto px-5 py-2.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm active:scale-95 bg-white border border-slate-300 text-slate-700 hover:border-emerald-500 hover:text-emerald-700";
+      }
+
+      renderVerseText();
+      renderScheduleGrid();
+      updateProgress();
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      toastMsg.textContent = message;
+      toast.classList.remove('opacity-0', 'translate-y-3');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-3');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2000);
+    }
+
+    function copyVerse() {
+      const data = BIBLE_PLAN[currentDayIndex];
+      const copyText = `[말씀 암송 48일 - Day ${data.day}]\n${data.ref}\n\n${data.text}`;
+      
+      const textArea = document.createElement("textarea");
+      textArea.value = copyText;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showToast("구절이 클립보드에 복사되었습니다!");
+      } catch (err) {
+        showToast("복사에 실패했습니다.");
+      }
+      document.body.removeChild(textArea);
+    }
+
+    // TTS voice speech synthesis
+    function speakVerse() {
+      const data = BIBLE_PLAN[currentDayIndex];
+      if (!('speechSynthesis' in window)) {
+        showToast("음성 읽기를 지원하지 않는 브라우저입니다.");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const speakText = `${data.ref}. ${data.text}`;
+      const utterance = new SpeechSynthesisUtterance(speakText);
+      utterance.lang = 'ko-KR';
+      utterance.rate = 0.88; // 또박또박 낭독 속도
+      window.speechSynthesis.speak(utterance);
+      showToast("말씀을 낭독합니다.");
+    }
+
+    document.getElementById('prevDayBtn').addEventListener('click', () => {
+      if (currentDayIndex > 0) {
+        currentDayIndex--;
+        renderDayView();
+      } else {
+        showToast("첫 번째 구절입니다.");
+      }
+    });
+
+    document.getElementById('nextDayBtn').addEventListener('click', () => {
+      if (currentDayIndex < TOTAL_DAYS - 1) {
+        currentDayIndex++;
+        renderDayView();
+      } else {
+        showToast("마지막 암송 구절입니다!");
+      }
+    });
+
+    document.getElementById('todayJumpBtn').addEventListener('click', () => {
+      currentDayIndex = todayOfficialIndex;
+      renderDayView();
+      showToast("오늘의 암송구절로 이동했습니다!");
+    });
+
+    document.getElementById('toggleListBtn').addEventListener('click', () => {
+      allDaysContainer.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    document.querySelectorAll('.mode-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        setMode(e.currentTarget.dataset.mode);
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', copyVerse);
+    document.getElementById('speakBtn').addEventListener('click', speakVerse);
+
+    toggleCompleteBtn.addEventListener('click', () => {
+      const currentDay = BIBLE_PLAN[currentDayIndex].day;
+      if (completedDays[currentDay]) {
+        delete completedDays[currentDay];
+        showToast(`Day ${currentDay} 암송 완료를 취소했습니다.`);
+      } else {
+        completedDays[currentDay] = true;
+        showToast(`Day ${currentDay} 암송 완료! 은혜로운 하루 되세요 🙏`);
+      }
+      localStorage.setItem('bible_memorize_completed_v1', JSON.stringify(completedDays));
+      renderDayView();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDayView();
+      // 오늘 날짜 안내
+      setTimeout(() => {
+        showToast("오늘의 암송구절이 준비되었습니다!");
+      }, 500);
+    });
+  </script>
+</body>
+</html>
+```
